@@ -19,11 +19,9 @@ Stop ParseStop(const string& buff) {
 
 	begin = end + 2;
 	end = buff.find_first_of(',');
-	res.x = stod(buff.substr(begin, end - begin));
-
+    res.coords.lat = stod(buff.substr(begin, end - begin));
 	begin = end + 2;
-	res.y = stod(buff.substr(begin));
-
+    res.coords.lng = stod(buff.substr(begin, end - begin));
 
 	return res;
 }
@@ -78,12 +76,12 @@ Bus ParseBus(const string& line) {
 
 	buff.remove_prefix(pos + 1);
 
-	res.circled = buff.find('>') == buff.npos;
+	res.iscircled = buff.find('>') == buff.npos;
 
 	while (true) {
 		buff.remove_prefix(1);
 
-		if (res.circled) {
+		if (res.iscircled) {
 			pos = buff.find('-');
 		}
 		else {

@@ -55,8 +55,6 @@ void ProcessQuery(istream& is, TransportCatalogue& cat, ostream& os) {
 	string null;
 	getline(is, null);
 
-	vector<Query> queries;
-
 	for (size_t i = 0; i < lines_num; ++i) {
 		Query query;
 		string buff;
@@ -69,12 +67,7 @@ void ProcessQuery(istream& is, TransportCatalogue& cat, ostream& os) {
 			query.is_bus = false;
 			query.text = buff.substr(5);
 		}
-		queries.push_back(move(query));
-	}
-
-
-	for (Query& query : queries) {
-		if (query.is_bus) {
+        if (query.is_bus) {
 			ProcessBusQuery(query.text, cat, os);
 		}
 		else {

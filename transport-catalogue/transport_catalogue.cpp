@@ -45,7 +45,7 @@ bool TransportCatalogue::CheckStop(string_view stop_name) {
 
 size_t TransportCatalogue::GetStopCountTotal(string_view bus_name) {
 	auto& bus = *name_to_bus_.at(bus_name);
-	if (bus.circled) {
+	if (bus.iscircled) {
 		return bus.stops.size() * 2 - 1;
 	}
 	else {
@@ -70,8 +70,8 @@ pair<size_t, double> TransportCatalogue::GetRouteLength(string_view bus_name) {
 	for (auto& stop : bus.stops) {
 
 		name_stop2 = name_to_stop_[stop]->name;
-		geo_stop2.lat = name_to_stop_[stop]->x;
-		geo_stop2.lng = name_to_stop_[stop]->y;
+        geo_stop2.lat = name_to_stop_[stop]->coords.lat;
+		geo_stop2.lng = name_to_stop_[stop]->coords.lng;
 
 		if (first_run) {
 			geo_stop1.lat = geo_stop2.lat;
@@ -93,7 +93,7 @@ pair<size_t, double> TransportCatalogue::GetRouteLength(string_view bus_name) {
 			length = stop_distances_.at(way_back);
 		}
 
-		if (!bus.circled) {
+		if (!bus.iscircled) {
 			length_geo += ComputeDistance(geo_stop1, geo_stop2);
 			length_road += length;
 		}

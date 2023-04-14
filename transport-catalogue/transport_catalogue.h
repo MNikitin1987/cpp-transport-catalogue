@@ -21,15 +21,16 @@ private:
 
 struct Stop {
 	string name;
-	double x;
-	double y;
+    Coordinates coords;
 };
 
 struct Bus {
-	bool circled;
+	bool iscircled;
 	string name;
 	vector<string_view> stops;
 	set<string_view> unique_stops;
+    // ответ на "порекомендую организовать еще одну структуру, которая будет служить для возврата данных по запросу":
+    // структуру добавлю при следующем внесении крупных изменений (спасибо за подсказку)
 };
 
 class TransportCatalogue {
@@ -38,7 +39,7 @@ public:
 	TransportCatalogue() = default;
 	void AddBus(const Bus& bus);
 	void AddStop(const Stop& stop);
-	void SetDistance(const string_view stop1, const string_view stop2, const size_t distance);
+	void SetDistance(const string_view stop_from, const string_view stop_to, const size_t distance);
 
 	bool CheckBus(string_view name);
 	bool CheckStop(string_view name);
