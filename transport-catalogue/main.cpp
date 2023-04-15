@@ -1,13 +1,16 @@
-#include <iostream>
-
 #include "transport_catalogue.h"
-#include "input_reader.h"
-#include "stat_reader.h"
+#include "map_renderer.h"
+#include "json_reader.h"
 
-#include "geo.h"
-
+using namespace std;
+using namespace json_reader;
+using namespace renderer;
 
 int main() {
-	TransportCatalogue catalog = ReadCatalog(cin);
-	ProcessQuery(cin, catalog, cout);
+	TransportCatalogue cat;
+	MapRenderer renderer(cat);
+	RequestHandler handler(cat, renderer);
+	JSONReader reader(cat, renderer, handler);
+	reader.Load(cin);
+	handler.ProcessRequests(cout);
 }
