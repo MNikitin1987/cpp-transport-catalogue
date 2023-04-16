@@ -10,7 +10,7 @@ namespace domain {
 	using namespace geo;
 
 	struct Stop {
-		string name;
+        string name;
         Coordinates coords;
 	};
 

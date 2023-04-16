@@ -25,7 +25,6 @@ namespace json_reader {
 		void ReadCatalog(const json::Array& base_requests);
 		void ReadRenderSettings(const json::Dict& settings);
 		void ReadRequests(const json::Array& stat_requests);
-
 	private:
 		TransportCatalogue& db_;
 		MapRenderer& map_renderer_;
