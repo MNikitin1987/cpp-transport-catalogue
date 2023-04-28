@@ -20,7 +20,6 @@ namespace json_reader {
 	public:
 		JSONReader(TransportCatalogue& db, MapRenderer& map_renderer, RequestHandler& handler);
 		void Load(istream& is);
-
 	private:
 		void ReadCatalog(const json::Array& base_requests);
 		void ReadRenderSettings(const json::Dict& settings);

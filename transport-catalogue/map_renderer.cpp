@@ -1,5 +1,11 @@
 #include "map_renderer.h"
 
+/*
+ * В этом файле вы можете разместить код, отвечающий за визуализацию карты маршрутов в формате SVG.
+ * Визуализация маршрутов вам понадобится во второй части итогового проекта.
+ * Пока можете оставить файл пустым.
+ */
+
 namespace renderer {
 
 	bool IsZero(double value) {
@@ -33,7 +39,6 @@ namespace renderer {
 	}
 
 	void MapRenderer::RenderBusLines(svg::Document& doc) const {
-
 		size_t color_num = 0;
 
 		for (const auto& bus_name : bus_names_) {
@@ -54,11 +59,9 @@ namespace renderer {
 			line.SetFillColor("none"s);
 
 			line.SetStrokeColor(settings_.color_palette[color_num]);
-
 			if (++color_num == settings_.color_palette.size()) {
 				color_num = 0;
 			}
-
 			doc.Add(line);
 		}
 	}
@@ -86,14 +89,11 @@ namespace renderer {
 			res.SetFontWeight("bold"s);
 		}
 		res.SetData(string{ text });
-
 		return res;
 	}
 
 	void MapRenderer::RenderBusNames(svg::Document& doc) const {
-
 		size_t color_num = 0;
-
 		for (const auto& bus_name : bus_names_) {
 			if (db_.GetStopCountTotal(bus_name) == 0 || db_.GetStopCountTotal(bus_name) == 1) {
 				continue;
@@ -152,7 +152,6 @@ namespace renderer {
 	}
 
 	void MapRenderer::RenderStopNames(svg::Document& doc) const {
-
 		for (const auto& stop_name : stop_names_) {
 
 			auto txt_subs = GetText(projector_(db_.GetStopCoords(stop_name)), stop_name, false);

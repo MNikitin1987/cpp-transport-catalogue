@@ -19,7 +19,7 @@ namespace geo {
         if (from == to) {
             return 0;
         }
-        static const double dr = M_PI / 180.;
+        static const double dr = 3.1415926535 / 180.;
         static const double earth_radius = 6371000;
 
         return acos(sin(from.lat * dr) * sin(to.lat * dr)

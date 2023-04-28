@@ -122,14 +122,12 @@ namespace renderer {
 
         void SetSettings(RenderSettings& settings);
         svg::Document RenderMap() const;
-
     private:
         void RenderBusLines(svg::Document& doc) const;
         void RenderBusNames(svg::Document& doc) const;
         void RenderStopCircles(svg::Document& doc) const;
         void RenderStopNames(svg::Document& doc) const;
         svg::Text GetText(const svg::Point& pos, string_view text, bool for_bus) const;
-
     private:
         const TransportCatalogue& db_;
         RenderSettings settings_;

@@ -6,6 +6,7 @@ void TransportCatalogue::AddStop(const Stop& stop) {
 }
 
 void TransportCatalogue::AddBus(const Bus& bus) {
+
 	buses_.push_back(bus);
 
 	for (auto& stop : buses_.back().stops) {
@@ -36,7 +37,7 @@ bool TransportCatalogue::CheckStop(string_view stop_name) const {
 
 size_t TransportCatalogue::GetStopCountTotal(string_view bus_name) const {
 	auto& bus = *name_to_bus_.at(bus_name);
-	if (bus.iscircled) {
+	if (bus.circled) {
 		return bus.stops.size() * 2 - 1;
 	}
 	else {
@@ -62,8 +63,8 @@ pair<size_t, double> TransportCatalogue::GetRouteLength(string_view bus_name) co
 	for (const auto& stop : bus.stops) {
 
 		name_stop2 = name_to_stop_.at(stop)->name;
-		geo_stop2.lat = name_to_stop_.at(stop)->coords.lat;
-		geo_stop2.lng = name_to_stop_.at(stop)->coords.lng;
+		geo_stop2.lat = name_to_stop_.at(stop)->north;
+		geo_stop2.lng = name_to_stop_.at(stop)->east;
 
 		if (first_run) {
 			geo_stop1.lat = geo_stop2.lat;
@@ -85,7 +86,7 @@ pair<size_t, double> TransportCatalogue::GetRouteLength(string_view bus_name) co
 			length = stop_distances_.at(way_back);
 		}
 
-		if (!bus.iscircled) {
+		if (!bus.circled) {
 			length_geo += ComputeDistance(geo_stop1, geo_stop2);
 			length_road += length;
 		}
@@ -104,8 +105,10 @@ pair<size_t, double> TransportCatalogue::GetRouteLength(string_view bus_name) co
 		geo_stop1 = geo_stop2;
 		name_stop1 = name_stop2;
 	}
+
 	return { length_road, static_cast<double>(length_road) / length_geo };
 }
+
 
 vector<string_view> TransportCatalogue::GetBusesAtStop(string_view stop_name) const {
 	vector<string_view> result;
@@ -146,7 +149,8 @@ vector<Coordinates> TransportCatalogue::GetCoordinates() const {
 	for (const auto& [_, bus] : name_to_bus_) {
 		for (const auto& stop : bus->stops) {
 			//if (!stop_buses_.at(stop).empty()) {//! 
-			res.push_back({ name_to_stop_.at(stop)->coords.lat, name_to_stop_.at(stop)->coords.lng });
+			res.push_back({ name_to_stop_.at(stop)->north, name_to_stop_.at(stop)->east });
+			//}
 		}
 	}
 
@@ -170,12 +174,12 @@ vector<Coordinates> TransportCatalogue::GetPath(const string_view bus_name, cons
 	const auto& bus = *name_to_bus_.at(bus_name);
 
 	for (auto it = bus.stops.begin(); it != bus.stops.end(); ++it) {
-		res.push_back({ name_to_stop_.at(*it)->coords.lat,name_to_stop_.at(*it)->coords.lng });
+		res.push_back({ name_to_stop_.at(*it)->north,name_to_stop_.at(*it)->east });
 	}
 
-	if (bus.iscircled && !for_bus_name) {
+	if (bus.circled && !for_bus_name) {
 		for (auto it = bus.stops.rbegin() + 1; it != bus.stops.rend(); ++it) {
-			res.push_back({ name_to_stop_.at(*it)->coords.lat,name_to_stop_.at(*it)->coords.lng });
+			res.push_back({ name_to_stop_.at(*it)->north,name_to_stop_.at(*it)->east });
 		}
 	}
 
@@ -183,7 +187,7 @@ vector<Coordinates> TransportCatalogue::GetPath(const string_view bus_name, cons
 }
 
 bool TransportCatalogue::GetBusRound(const string_view bus_name) const {
-	return !name_to_bus_.at(bus_name)->iscircled;
+	return !name_to_bus_.at(bus_name)->circled;
 }
 
 vector<string_view> TransportCatalogue::GetStopNamesSorted() const {
@@ -202,5 +206,5 @@ vector<string_view> TransportCatalogue::GetStopNamesSorted() const {
 }
 
 Coordinates TransportCatalogue::GetStopCoords(const string_view stop_name) const {
-	return { name_to_stop_.at(stop_name)->coords.lat, name_to_stop_.at(stop_name)->coords.lng };
-} 
+	return { name_to_stop_.at(stop_name)->north, name_to_stop_.at(stop_name)->east };
+}

@@ -12,77 +12,77 @@ namespace req_handler {
 	}
 
 	void RequestHandler::ProcessRequests(ostream& os) const {
-		Array res;
+		json::Builder res;
+
+		res.StartArray();
 
 		for (const auto& req : requests_) {
 			if (req.type == RequestType::BUS) {
-				res.push_back(ProcessBusRequest(req));
+				res.Value(ProcessBusRequest(req));
 			}
 			else if (req.type == RequestType::STOP) {
-				res.push_back(ProcessStopRequest(req));
+				res.Value(ProcessStopRequest(req));
 			} 
 			else if (req.type == RequestType::MAP) {
-				res.push_back(ProcessMapRequest(req));
+				res.Value(ProcessMapRequest(req));
 			}
 		}
 
-		PrintNode(res, os);
+		Print(json::Document{ res.EndArray().Build()}, os);
 	}
 
 	Node RequestHandler::ProcessBusRequest(const RequestData& req) const {
-		Dict res;
+		json::Builder res;
 
-		res.insert({ "request_id"s, req.id });
+		res.StartDict();
+		res.Key("request_id"s)			.Value(req.id);
 
 		if (!db_.CheckBus(req.name)) {
-			res.insert({ "error_message"s, "not found"s });
-			return res;
+			res.Key("error_message"s)	.Value("not found"s);
+			return res.EndDict().Build();
 		}
 
 		const auto distance = db_.GetRouteLength(req.name);
-		res.insert({ "curvature"s, distance.second });
-		res.insert({ "route_length"s, static_cast<int>(distance.first) });
-		res.insert({ "stop_count"s, static_cast<int>(db_.GetStopCountTotal(req.name)) });
-		res.insert({ "unique_stop_count"s, static_cast<int>(db_.GetStopCountUnique(req.name)) });
+		res.Key("curvature"s)			.Value(distance.second);
+		res.Key("route_length"s)		.Value(static_cast<int>(distance.first));
+		res.Key("stop_count"s)			.Value(static_cast<int>(db_.GetStopCountTotal(req.name)));
+		res.Key("unique_stop_count"s)	.Value(static_cast<int>(db_.GetStopCountUnique(req.name)));
 
-		return res;
+		return res.EndDict().Build();
 	}
 
 	Node RequestHandler::ProcessStopRequest(const RequestData& req) const {
-		Dict res;
+		json::Builder res;
 
-		res.insert({ "request_id"s, req.id });
+		res.StartDict();
+		res.Key("request_id"s)			.Value(req.id);
 
 		if (!db_.CheckStop(req.name)) {
-			res.insert({ "error_message"s, "not found"s });
-			return res;
+			res.Key("error_message"s)	.Value("not found"s);
+			res.EndDict();
+			return res.Build();
 		}
 
-		Array buses;
+		res.Key("buses"s).StartArray();
 		const auto bus_names = db_.GetBusesAtStop(req.name);
 		for (const auto& bus : bus_names) {
-			buses.push_back(string(bus));
+			res.Value(string(bus));
 		}
-		
-		res.insert({ "buses"s, buses });
-
-		return res;
+		return res.EndArray().EndDict().Build();
 	}
 
 	Node RequestHandler::ProcessMapRequest(const RequestData& req) const {
-		Dict res;
+		json::Builder res;
 
-		res.insert({ "request_id"s, req.id });
-
-		const auto doc = renderer_.RenderMap();
+		res.StartDict();
+		res.Key("request_id"s).Value(req.id);
 
 		ostringstream svg_doc;
-		doc.Render(svg_doc);
-		string svg_str = svg_doc.str();
-		Node svg_print(svg_str);
+		renderer_.RenderMap().Render(svg_doc);
+		Node svg_print(svg_doc.str());
 
-		res.insert({"map"s, svg_print});
-
-		return res;
+		res.Key("map"s).Value(svg_print);
+		
+		return res.EndDict().Build();
 	}
 }

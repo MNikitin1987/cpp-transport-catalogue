@@ -30,7 +30,7 @@ public:
 	TransportCatalogue() = default;
 	void AddBus(const Bus& bus);
 	void AddStop(const Stop& stop);
-	void SetDistance(const string_view stop_from, const string_view stop_to, const size_t distance);
+	void SetDistance(const string_view stop1, const string_view stop2, const size_t distance);
 
 	bool CheckBus(string_view name) const;
 	bool CheckStop(string_view name) const;
@@ -53,4 +53,4 @@ private:
 	unordered_map<string_view, const Bus*> name_to_bus_;
 	unordered_map<string_view, set<string_view>> stop_buses_;
 	unordered_map<pair<string_view, string_view>, size_t, PairHasher> stop_distances_;
-}; 
+};

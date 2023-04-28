@@ -1,6 +1,5 @@
 #include "json_reader.h"
 
-
 namespace json_reader {
 
 	JSONReader::JSONReader(TransportCatalogue& db, MapRenderer& map_renderer, RequestHandler& handler)
@@ -12,29 +11,29 @@ namespace json_reader {
 	void JSONReader::ReadCatalog(const Array& base_requests) {
 
 		for (const auto& request : base_requests) {
-			if (request.AsMap().at("type"s).AsString() == "Stop"s) {
+			if (request.AsDict().at("type"s).AsString() == "Stop"s) {
 				Stop stop;
-				stop.name = request.AsMap().at("name"s).AsString();
-                stop.coords.lat = request.AsMap().at("latitude"s).AsDouble();
-				stop.coords.lng = request.AsMap().at("longitude"s).AsDouble();
+				stop.name = request.AsDict().at("name"s).AsString();
+				stop.north = request.AsDict().at("latitude"s).AsDouble();
+				stop.east = request.AsDict().at("longitude"s).AsDouble();
 				db_.AddStop(stop);
 			}
 		}
 
 		for (const auto& request : base_requests) {
-			if (request.AsMap().at("type"s).AsString() == "Stop"s) {
-				for (const auto& distance : request.AsMap().at("road_distances"s).AsMap()) {
-					db_.SetDistance(request.AsMap().at("name"s).AsString(), distance.first, distance.second.AsDouble());
+			if (request.AsDict().at("type"s).AsString() == "Stop"s) {
+				for (const auto& distance : request.AsDict().at("road_distances"s).AsDict()) {
+					db_.SetDistance(request.AsDict().at("name"s).AsString(), distance.first, distance.second.AsDouble());
 				}
 			}
 		}
 
 		for (const auto& request : base_requests) {
-			if (request.AsMap().at("type"s).AsString() == "Bus"s) {
+			if (request.AsDict().at("type"s).AsString() == "Bus"s) {
 				Bus bus;
-				bus.name = request.AsMap().at("name"s).AsString();
-				bus.iscircled = !request.AsMap().at("is_roundtrip"s).AsBool();
-				for (const auto& stop : request.AsMap().at("stops"s).AsArray()) {
+				bus.name = request.AsDict().at("name"s).AsString();
+				bus.circled = !request.AsDict().at("is_roundtrip"s).AsBool();
+				for (const auto& stop : request.AsDict().at("stops"s).AsArray()) {
 					bus.stops.push_back(stop.AsString());
 				}
 				db_.AddBus(bus);
@@ -73,7 +72,7 @@ namespace json_reader {
 	void JSONReader::ReadRequests(const Array& stat_requests) {
 
 		for (const auto& request : stat_requests) {
-			const auto& req = request.AsMap();
+			const auto& req = request.AsDict();
 
 			RequestType type;
 			int id;
@@ -93,11 +92,9 @@ namespace json_reader {
 			else {
 				throw logic_error("JSONReader::ReadRequests: unknown request type"s);
 			}
-
 			if (type == RequestType::BUS || type == RequestType::STOP) {
 				name = req.at("name").AsString();
 			}
-
 			handler_.AddRequest({ name, id, type });
 		}
 	}
@@ -105,10 +102,11 @@ namespace json_reader {
 	void JSONReader::Load(istream& is) {
 		const json::Document doc = json::Load(is);
 
-		ReadCatalog(doc.GetRoot().AsMap().at("base_requests"s).AsArray());
-		ReadRenderSettings(doc.GetRoot().AsMap().at("render_settings").AsMap());
-		ReadRequests(doc.GetRoot().AsMap().at("stat_requests"s).AsArray());
+		ReadCatalog(doc.GetRoot().AsDict().at("base_requests"s).AsArray());
+	ReadRenderSettings(doc.GetRoot().AsDict().at("render_settings").AsDict());
+		ReadRequests(doc.GetRoot().AsDict().at("stat_requests"s).AsArray());
 	}
+
 
 	Color ReadColor(const Node& node) {
 		if (node.IsString()) {

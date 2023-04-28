@@ -3,19 +3,16 @@
 #include <string>
 #include <vector>
 #include <set>
-#include "geo.h"
 
 namespace domain {
-    using namespace std;
-	using namespace geo;
-
+	using namespace std;
 	struct Stop {
-        string name;
-        Coordinates coords;
+		string name;
+		double north;
+		double east;
 	};
-
 	struct Bus {
-		bool iscircled;
+		bool circled;
 		string name;
 		vector<string_view> stops;
 		set<string_view> unique_stops;

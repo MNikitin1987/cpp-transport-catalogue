@@ -79,6 +79,10 @@ namespace svg {
     ostream& operator<<(ostream& out, StrokeLineCap cap);
     ostream& operator<<(ostream& out, Color color);
 
+    /*
+     * Вспомогательная структура, хранящая контекст для вывода SVG-документа с отступами.
+     * Хранит ссылку на поток вывода, текущее значение и шаг отступа при выводе элемента
+     */
     struct RenderContext {
         RenderContext(ostream& out)
             : out(out) {
@@ -176,6 +180,7 @@ namespace svg {
             if (stroke_line_join_) {
                 out << " stroke-linejoin=\""sv << *stroke_line_join_ << "\""sv;
             }
+
         }
 
     private:
@@ -190,6 +195,11 @@ namespace svg {
         optional<StrokeLineJoin> stroke_line_join_;
     };
 
+    /*
+     * Абстрактный базовый класс Object служит для унифицированного хранения
+     * конкретных тегов SVG-документа
+     * Реализует паттерн "Шаблонный метод" для вывода содержимого тега
+     */
     class Object {
     public:
         void Render(const RenderContext& context) const;
@@ -240,6 +250,7 @@ namespace svg {
         Text& SetFontFamily(string font_family);
         Text& SetFontWeight(string font_weight);
         Text& SetData(string data);
+
     private:
         void RenderObject(const RenderContext& context) const override;
     private:
