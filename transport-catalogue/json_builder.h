@@ -1,13 +1,10 @@
 #include "json.h"
 
 namespace json {
-    using namespace std;
 
     class Context;
     class DictContext;
     class DictKeyContext;
-    class DictValueContext;
-    class ArrayContext;
 
     class Builder {
     public:
@@ -18,13 +15,13 @@ namespace json {
         Node Build();
         DictContext StartDict();
         Builder& EndDict();
-        DictKeyContext Key(string key);
-        ArrayContext StartArray();
+        DictKeyContext Key(std::string key);
+        Builder& StartArray();
         Builder& EndArray();
 
     private:
         Node root_;
-        vector<Node*> nodes_;
+        std::vector<Node*> nodes_;
     };
 
 
@@ -42,7 +39,7 @@ namespace json {
         DictContext(Builder& builder)
             : Context(builder) {
         }
-        DictKeyContext Key(string key);
+        DictKeyContext Key(std::string key);
         Builder& EndDict();
     };
 
@@ -51,28 +48,9 @@ namespace json {
         DictKeyContext(Builder& builder)
             : Context(builder) {
         }
-        DictValueContext Value(Node value);
-        ArrayContext StartArray();
+        Builder& Value(Node value);
+        Builder& StartArray();
         DictContext StartDict();
 
-    };
-
-    class DictValueContext : public Context {
-    public:
-        DictValueContext(Builder& builder)
-            : Context(builder) {
-        }
-        DictKeyContext Key(string key);
-        Builder& EndDict();
-    };
-    class ArrayContext : public Context {
-    public:
-        ArrayContext(Builder& builder)
-            : Context(builder) {
-        }
-        Builder& EndArray();
-        DictContext StartDict();
-        ArrayContext Value(Node node);
-        ArrayContext StartArray();
     };
 }

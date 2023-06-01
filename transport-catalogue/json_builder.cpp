@@ -6,17 +6,17 @@ using namespace json;
 
 Node Builder::Build() {
     if (!nodes_.empty()) {
-        throw logic_error("Build: stack not empty"s);
+        throw std::logic_error("Build: stack not empty");
     }
     return root_;
 }
 
 Builder& Builder::Value(Node node) {
     if (nodes_.empty()) {
-        throw std::logic_error("Value: stack empty"s);
+        throw std::logic_error("Value: stack empty");
     }
     if (!(nodes_.back()->IsNull() || nodes_.back()->IsArray())) {
-        throw std::logic_error("Value: after something not ended"s);
+        throw std::logic_error("Value: after something not ended");
     }
     if (nodes_.back()->IsArray()) {
         const_cast<Array&>(nodes_.back()->AsArray()).push_back(node);
@@ -31,11 +31,11 @@ Builder& Builder::Value(Node node) {
 DictContext Builder::StartDict() {
 
     if (nodes_.empty()) {
-        throw logic_error("StartDict: stack empty"s);
+        throw std::logic_error("StartDict: stack empty");
     }
 
     if (!(nodes_.back()->IsNull() || nodes_.back()->IsArray())) {
-        throw logic_error("StartDict: after something not ended"s);
+        throw std::logic_error("StartDict: after something not ended");
     }
 
     if (nodes_.back()->IsArray()) {
@@ -50,13 +50,13 @@ DictContext Builder::StartDict() {
     return res;
 }
 
-DictKeyContext Builder::Key(string key) {
+DictKeyContext Builder::Key(std::string key) {
     if (nodes_.empty()) {
-        throw logic_error("Key: stack empty"s);
+        throw std::logic_error("Key: stack empty");
     }
 
     if (!nodes_.back()->IsDict()) {
-        throw logic_error("Key: not after Dict"s);
+        throw std::logic_error("Key: not after Dict");
     }
 
     nodes_.push_back(&const_cast<json::Dict&>(nodes_.back()->AsDict())[key]);
@@ -67,11 +67,11 @@ DictKeyContext Builder::Key(string key) {
 
 Builder& Builder::EndDict() {
     if (nodes_.empty()) {
-        throw logic_error("EndDict: stack empty"s);
+        throw std::logic_error("EndDict: stack empty");
     }
 
     if (!nodes_.back()->IsDict()) {
-         throw logic_error("EndDict: not after Dict"s);
+         throw std::logic_error("EndDict: not after Dict");
     }
 
     nodes_.pop_back();
@@ -82,13 +82,33 @@ Builder& DictContext::EndDict() {
     return builder_.EndDict();
 }
 
-ArrayContext Builder::StartArray() {
+DictContext DictKeyContext::StartDict() {
+    return builder_.StartDict();
+}
+
+Builder& Builder::EndArray() {
     if (nodes_.empty()) {
-        throw logic_error("StartArray: stack empty"s);
+        throw std::logic_error("EndArray: stack empty");
+    }
+    
+    if(!nodes_.back()->IsArray()) {
+        throw std::logic_error("EndArray: not after Array");
+    }
+    nodes_.pop_back();
+    return *this;
+}
+
+DictKeyContext DictContext::Key(std::string key) {
+    return builder_.Key(move(key));
+}
+
+Builder& Builder::StartArray() {
+    if (nodes_.empty()) {
+        throw std::logic_error("StartArray: stack empty");
     }
 
     if(!(nodes_.back()->IsNull() || nodes_.back()->IsArray())) {
-        throw logic_error("StartArray: after something not ended"s);
+        throw std::logic_error("StartArray: after something not ended");
     }
 
     if (nodes_.back()->IsArray()) {
@@ -99,58 +119,13 @@ ArrayContext Builder::StartArray() {
         *nodes_.back() = Array{};
     }
 
-    ArrayContext res(*this);
-    return res;
-}
-
-Builder& Builder::EndArray() {
-    if (nodes_.empty()) {
-        throw logic_error("EndArray: stack empty"s);
-    }
-    
-    if(!nodes_.back()->IsArray()) {
-        throw logic_error("EndArray: not after Array"s);
-    }
-    nodes_.pop_back();
     return *this;
 }
 
-DictKeyContext DictValueContext::Key(string key) {
-    return builder_.Key(key);
-}
-
-Builder& DictValueContext::EndDict() {
-    return builder_.EndDict();
-}
-
-DictKeyContext DictContext::Key(string key) {
-    return builder_.Key(move(key));
-}
-
-DictValueContext DictKeyContext::Value(Node node) {
+Builder& DictKeyContext::Value(Node node) {
     return builder_.Value(move(node));
 }
 
-ArrayContext DictKeyContext::StartArray() {
+Builder& DictKeyContext::StartArray() {
     return builder_.StartArray();
-}
-
-Builder& ArrayContext::EndArray() {
-    return builder_.EndArray();
-}
-
-ArrayContext ArrayContext::Value(Node node) {
-    return builder_.Value(move(node));
-}
-
-ArrayContext ArrayContext::StartArray() {
-    return builder_.StartArray();
-}
-
-DictContext DictKeyContext::StartDict() {
-    return builder_.StartDict();
-}
-
-DictContext ArrayContext::StartDict() {
-    return builder_.StartDict();
 }
