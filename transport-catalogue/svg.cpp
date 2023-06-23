@@ -1,8 +1,12 @@
 #include "svg.h"
 
+#include "svg.h"
+
 using namespace std;
 
 namespace svg {
+
+
 
     void Object::Render(const RenderContext& context) const {
         context.RenderIndent();
@@ -33,6 +37,8 @@ namespace svg {
         out << "/>"sv;
     }
 
+
+
     // ---------- Polyline ------------------
 
     Polyline& Polyline::AddPoint(Point point) {
@@ -51,12 +57,14 @@ namespace svg {
             else {
                 out << " "sv;
             }
+
             out << point.x << ","sv << point.y;
         }
         out << "\""sv;
         RenderAttrs(out);
         out << "/>"sv;
     }
+
 
     // ---------- Text ------------------
 
@@ -72,7 +80,7 @@ namespace svg {
     }
 
     // Задаёт размеры шрифта (атрибут font-size)
-    Text& Text::SetFontSize(uint32_t size) {
+    Text& Text::SetFontSize(size_t size) {
         size_ = size;
         return *this;
     }
@@ -134,6 +142,7 @@ namespace svg {
                 out << c;
             }
         }
+
         out << "</text>"sv;
     }
 
@@ -145,6 +154,7 @@ namespace svg {
             RenderContext ctx(out, 2, 2);
             obj.get()->Render(ctx);
         }
+
         out << "</svg>"sv;
     }
 
@@ -152,9 +162,12 @@ namespace svg {
         objects_.emplace_back(move(obj));
     }
 
+
+
     ostream& operator<<(ostream& out, StrokeLineJoin join) {
 
         switch (join) {
+
         case StrokeLineJoin::ARCS:
             out << "arcs"sv;
             break;
@@ -171,6 +184,7 @@ namespace svg {
             out << "round"sv;
             break;
         }
+
         return out;
     }
 
@@ -186,35 +200,42 @@ namespace svg {
             out << "square"sv;
             break;
         }
+
         return out;
     }
 
     struct ColorPrinter {
         ostream& out;
+
         void operator()(monostate) const {
             out << "none"sv;
         }
+
         void operator()(Rgb color) {
             out << "rgb("sv;
             out << static_cast<int>(color.red) << ","sv;
             out << static_cast<int>(color.green) << ","sv;
             out << static_cast<int>(color.blue);
-            out << ")";
+            out << ")"sv;
         }
+
         void operator()(Rgba color) {
             out << "rgba("sv;
             out << static_cast<int>(color.red) << ","sv;
             out << static_cast<int>(color.green) << ","sv;
             out << static_cast<int>(color.blue) << ","sv;
             out << color.opacity;
-            out << ")";
+            out << ")"sv;
         }
+
         void operator()(string color) {
             out << color;
         }
     };
+
     ostream& operator<<(ostream& out, Color color) {
         visit(ColorPrinter{ out }, color);
         return out;
     }
+
 }  // namespace svg

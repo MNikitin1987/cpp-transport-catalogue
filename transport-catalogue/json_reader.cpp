@@ -1,12 +1,15 @@
 #include "json_reader.h"
 
+
 namespace json_reader {
 
-	JSONReader::JSONReader(TransportCatalogue& db, MapRenderer& map_renderer, RequestHandler& handler)
+	JSONReader::JSONReader(TransportCatalogue& db, MapRenderer& map_renderer, RequestHandler& handler, TransportRouter& router)
 		: db_(db)
 		, map_renderer_(map_renderer)
-		, handler_(handler) {
+		, handler_(handler)
+		, router_(router) {
 	}
+
 
 	void JSONReader::ReadCatalog(const Array& base_requests) {
 
@@ -32,7 +35,7 @@ namespace json_reader {
 			if (request.AsDict().at("type"s).AsString() == "Bus"s) {
 				Bus bus;
 				bus.name = request.AsDict().at("name"s).AsString();
-				bus.circled = !request.AsDict().at("is_roundtrip"s).AsBool();
+				bus.round_trip = request.AsDict().at("is_roundtrip"s).AsBool();
 				for (const auto& stop : request.AsDict().at("stops"s).AsArray()) {
 					bus.stops.push_back(stop.AsString());
 				}
@@ -40,6 +43,7 @@ namespace json_reader {
 			}
 		}
 	}
+
 
 	Color ReadColor(const Node& node);
 
@@ -69,6 +73,7 @@ namespace json_reader {
 		map_renderer_.SetSettings(res);
 	}
 
+
 	void JSONReader::ReadRequests(const Array& stat_requests) {
 
 		for (const auto& request : stat_requests) {
@@ -76,7 +81,7 @@ namespace json_reader {
 
 			RequestType type;
 			int id;
-			string name;
+			string name, route_from, route_to;
 
 			id = req.at("id").AsInt();
 
@@ -89,22 +94,39 @@ namespace json_reader {
 			else if (req.at("type").AsString() == "Map"s) {
 				type = RequestType::MAP;
 			}
+			else if (req.at("type").AsString() == "Route"s) {
+				type = RequestType::ROUTE;
+			}
 			else {
 				throw logic_error("JSONReader::ReadRequests: unknown request type"s);
 			}
+
 			if (type == RequestType::BUS || type == RequestType::STOP) {
-				name = req.at("name").AsString();
+				name = req.at("name"s).AsString();
 			}
-			handler_.AddRequest({ name, id, type });
+
+			if (type == RequestType::ROUTE) {
+				route_from = req.at("from"s).AsString();
+				route_to = req.at("to"s).AsString();
+			}
+
+			handler_.AddRequest({ name, id, type, route_from, route_to });
 		}
+	}
+
+	void JSONReader::ReadRoutingSettings(const Dict& routing_settings) {
+		router_.SetSettings(
+			routing_settings.at("bus_wait_time"s).AsInt(),
+			routing_settings.at("bus_velocity"s).AsDouble());
 	}
 
 	void JSONReader::Load(istream& is) {
 		const json::Document doc = json::Load(is);
 
 		ReadCatalog(doc.GetRoot().AsDict().at("base_requests"s).AsArray());
-	ReadRenderSettings(doc.GetRoot().AsDict().at("render_settings").AsDict());
+		ReadRenderSettings(doc.GetRoot().AsDict().at("render_settings").AsDict());
 		ReadRequests(doc.GetRoot().AsDict().at("stat_requests"s).AsArray());
+		ReadRoutingSettings(doc.GetRoot().AsDict().at("routing_settings"s).AsDict());
 	}
 
 
@@ -126,4 +148,6 @@ namespace json_reader {
 			}
 		}
 	}
+
 }
+

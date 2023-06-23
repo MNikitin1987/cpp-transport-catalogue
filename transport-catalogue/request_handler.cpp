@@ -1,15 +1,19 @@
 #include "request_handler.h"
 
+
 namespace req_handler {
 
-	RequestHandler::RequestHandler(const TransportCatalogue& db, const MapRenderer& renderer)
+	RequestHandler::RequestHandler(const TransportCatalogue& db, const MapRenderer& renderer, TransportRouter& router)
 		: db_(db)
-		, renderer_(renderer) {
+		, renderer_(renderer)
+		, router_(router) {
 	}
+
 
 	void RequestHandler::AddRequest(const RequestData req) {
 		requests_.push_back(req);
 	}
+
 
 	void RequestHandler::ProcessRequests(ostream& os) const {
 		json::Builder res;
@@ -26,10 +30,14 @@ namespace req_handler {
 			else if (req.type == RequestType::MAP) {
 				res.Value(ProcessMapRequest(req));
 			}
+			else if (req.type == RequestType::ROUTE) {
+				res.Value(ProcessRouteRequest(req));
+			}
 		}
 
 		Print(json::Document{ res.EndArray().Build()}, os);
 	}
+
 
 	Node RequestHandler::ProcessBusRequest(const RequestData& req) const {
 		json::Builder res;
@@ -51,6 +59,7 @@ namespace req_handler {
 		return res.EndDict().Build();
 	}
 
+
 	Node RequestHandler::ProcessStopRequest(const RequestData& req) const {
 		json::Builder res;
 
@@ -68,8 +77,10 @@ namespace req_handler {
 		for (const auto& bus : bus_names) {
 			res.Value(string(bus));
 		}
+
 		return res.EndArray().EndDict().Build();
 	}
+
 
 	Node RequestHandler::ProcessMapRequest(const RequestData& req) const {
 		json::Builder res;
@@ -85,4 +96,40 @@ namespace req_handler {
 		
 		return res.EndDict().Build();
 	}
+
+	Node RequestHandler::ProcessRouteRequest(const RequestData& req) const {
+		json::Builder res;
+		res.StartDict();
+		res.Key("request_id"s).Value(req.id);
+
+		const auto path = router_.GetPath(req.from, req.to);
+
+		if (!path.has_value()) {
+			res.Key("error_message"s).Value("not found"s);
+			return res.EndDict().Build();
+		}
+
+		res.Key("total_time"s).Value(path->total_time);
+
+		res.Key("items"s).StartArray();
+
+		for (const auto& item : path->items) {
+			res.StartDict();
+
+			res.Key("time"s).Value(item.time);
+			res.Key("type"s).Value(item.span_count != 0 ? "Bus"s : "Wait"s);
+			res.Key(item.span_count != 0 ? "bus"s : "stop_name"s).Value(string{ item.name});
+
+			if (item.span_count != 0) {
+				res.Key("span_count"s).Value(static_cast<int>(item.span_count));
+			}
+
+			res.EndDict();
+		}
+		res.EndArray();
+
+
+		return res.EndDict().Build();
+	}
+
 }

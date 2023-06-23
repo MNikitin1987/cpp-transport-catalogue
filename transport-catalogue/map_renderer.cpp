@@ -6,6 +6,7 @@
  * Пока можете оставить файл пустым.
  */
 
+
 namespace renderer {
 
 	bool IsZero(double value) {
@@ -38,7 +39,9 @@ namespace renderer {
 		return res;
 	}
 
+
 	void MapRenderer::RenderBusLines(svg::Document& doc) const {
+
 		size_t color_num = 0;
 
 		for (const auto& bus_name : bus_names_) {
@@ -48,7 +51,7 @@ namespace renderer {
 
 			svg::Polyline line;
 
-			const auto path = db_.GetPath(bus_name, false);
+			const auto path = db_.GetPathCoords(bus_name);
 			for (const auto& point : path) {
 				line.AddPoint(projector_(point));
 			}
@@ -59,12 +62,15 @@ namespace renderer {
 			line.SetFillColor("none"s);
 
 			line.SetStrokeColor(settings_.color_palette[color_num]);
+
 			if (++color_num == settings_.color_palette.size()) {
 				color_num = 0;
 			}
+
 			doc.Add(line);
 		}
 	}
+
 
 	svg::Text MapRenderer::GetText(
 		const svg::Point& pos,
@@ -89,17 +95,21 @@ namespace renderer {
 			res.SetFontWeight("bold"s);
 		}
 		res.SetData(string{ text });
+
 		return res;
 	}
 
+
 	void MapRenderer::RenderBusNames(svg::Document& doc) const {
+
 		size_t color_num = 0;
+
 		for (const auto& bus_name : bus_names_) {
 			if (db_.GetStopCountTotal(bus_name) == 0 || db_.GetStopCountTotal(bus_name) == 1) {
 				continue;
 			}
 
-			const auto path = db_.GetPath(bus_name, true);
+			const auto path = db_.GetPathCoordsOneWay(bus_name);
 
 			auto txt_beg_subs = GetText(projector_(path.front()), bus_name, true);
 			auto txt_beg_main = GetText(projector_(path.front()), bus_name, true);
@@ -119,7 +129,7 @@ namespace renderer {
 			doc.Add(txt_beg_subs);
 			doc.Add(txt_beg_main);
 
-			if (!db_.GetBusRound(bus_name) && path.front() != path.back()) {
+			if (!db_.IsBusRound(bus_name) && path.front() != path.back()) {
 				txt_end_subs
 					.SetFillColor(settings_.underlayer_color)
 					.SetStrokeColor(settings_.underlayer_color)
@@ -152,6 +162,7 @@ namespace renderer {
 	}
 
 	void MapRenderer::RenderStopNames(svg::Document& doc) const {
+
 		for (const auto& stop_name : stop_names_) {
 
 			auto txt_subs = GetText(projector_(db_.GetStopCoords(stop_name)), stop_name, false);
@@ -170,4 +181,5 @@ namespace renderer {
 			doc.Add(txt_main);
 		}
 	}
+
 }

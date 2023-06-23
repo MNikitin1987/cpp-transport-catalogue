@@ -13,6 +13,7 @@
 
 using namespace std;
 
+
 namespace svg {
 
     class Rgb {
@@ -118,6 +119,7 @@ namespace svg {
         virtual void Draw(ObjectContainer& container) const = 0;
     };
 
+
     template <typename Owner>
     class PathProps {
     public:
@@ -151,19 +153,13 @@ namespace svg {
 
         void RenderAttrs(ostream& out) const {
 
-            try {
-                get<monostate>(fill_color_);
-            }
-            catch (const bad_variant_access& e) {
+            if (!holds_alternative<monostate>(fill_color_)) {
                 out << " fill=\""sv;
                 out << fill_color_;
                 out << "\""sv;
             }
 
-            try {
-                get<monostate>(stroke_color_);
-            }
-            catch (const bad_variant_access& e) {
+            if (!holds_alternative<monostate>(stroke_color_)) {
                 out << " stroke=\""sv;
                 out << stroke_color_;
                 out << "\""sv;
@@ -220,6 +216,8 @@ namespace svg {
         virtual void AddPtr(unique_ptr<Object>&& obj) = 0;
     };
 
+
+
     class Circle : public Object, public PathProps<Circle> {
     public:
         Circle& SetCenter(Point center);
@@ -233,6 +231,7 @@ namespace svg {
         double radius_ = 1.0;
     };
 
+
     class Polyline : public Object, public PathProps<Polyline> {
     public:
         Polyline& AddPoint(Point point);
@@ -242,11 +241,12 @@ namespace svg {
         vector<Point> points_;
     };
 
+
     class Text : public Object, public PathProps<Text> {
     public:
         Text& SetPosition(Point pos);
         Text& SetOffset(Point offset);
-        Text& SetFontSize(uint32_t size);
+        Text& SetFontSize(size_t size);
         Text& SetFontFamily(string font_family);
         Text& SetFontWeight(string font_weight);
         Text& SetData(string data);
@@ -262,6 +262,7 @@ namespace svg {
         string data_;
     };
 
+
     class Document : public ObjectContainer {
     public:
         void AddPtr(unique_ptr<Object>&& obj);
@@ -270,4 +271,5 @@ namespace svg {
     private:
         vector<unique_ptr<Object>> objects_;
     };
+
 }  // namespace svg

@@ -85,7 +85,7 @@ namespace renderer {
         }
 
     private:
-        double padding_;
+        double padding_ = 0;
         double min_lon_ = 0;
         double max_lat_ = 0;
         double zoom_coeff_ = 0;
@@ -116,18 +116,22 @@ namespace renderer {
         vector<Color> color_palette;
     };
 
+
     class MapRenderer {
     public:
         MapRenderer(TransportCatalogue& cat);
 
         void SetSettings(RenderSettings& settings);
         svg::Document RenderMap() const;
+
+
     private:
         void RenderBusLines(svg::Document& doc) const;
         void RenderBusNames(svg::Document& doc) const;
         void RenderStopCircles(svg::Document& doc) const;
         void RenderStopNames(svg::Document& doc) const;
         svg::Text GetText(const svg::Point& pos, string_view text, bool for_bus) const;
+
     private:
         const TransportCatalogue& db_;
         RenderSettings settings_;
@@ -135,4 +139,5 @@ namespace renderer {
         vector<string_view> bus_names_;
         vector<string_view> stop_names_;
     };
+
 }

@@ -24,6 +24,7 @@ private:
 	hash<string_view> hasher_;
 };
 
+
 class TransportCatalogue {
 
 public:
@@ -41,10 +42,14 @@ public:
 
 	vector<Coordinates> GetCoordinates() const;
 	vector<string_view> GetBusNamesSorted() const;
-	vector<Coordinates> GetPath(const string_view bus_name, const bool for_text) const;
-	bool GetBusRound(const string_view bus_name) const;
+	bool IsBusRound(const string_view bus_name) const;
 	vector<string_view> GetStopNamesSorted() const;
 	Coordinates GetStopCoords(const string_view stop_name) const;
+
+	vector<Coordinates> GetPathCoords(const string_view bus_name) const;
+	vector<Coordinates> GetPathCoordsOneWay(const string_view bus_name) const;
+	vector<string_view> GetStopNames(const string_view bus_name) const;
+	size_t GetRoadLength(string_view from, string_view to) const;
 
 private:
 	deque<Bus> buses_;

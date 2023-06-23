@@ -7,6 +7,7 @@
 #include <vector>
 
 namespace json {
+
     class Node;
     using Dict = std::map<std::string, Node>;
     using Array = std::vector<Node>;
@@ -67,5 +68,7 @@ namespace json {
     }
 
     Document Load(std::istream& input);
+
     void Print(const Document& doc, std::ostream& output);
+
 }  // namespace json
