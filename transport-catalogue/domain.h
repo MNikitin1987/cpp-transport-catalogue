@@ -22,4 +22,6 @@ namespace domain {
 		set<string_view> unique_stops;
 	};
 
+
+	size_t NumFromName(const vector<string_view>& all_names, const string_view& name);
 }

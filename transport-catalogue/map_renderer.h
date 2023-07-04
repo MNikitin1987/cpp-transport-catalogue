@@ -10,12 +10,14 @@
 #include <iostream>
 #include <optional>
 #include <vector>
+#include <stdexcept>
 
 namespace renderer {
     using namespace std;
     using namespace svg;
     using namespace geo;
     using namespace domain;
+    using namespace tc;
 
     inline const double EPSILON = 1e-6;
 
@@ -122,6 +124,8 @@ namespace renderer {
         MapRenderer(TransportCatalogue& cat);
 
         void SetSettings(RenderSettings& settings);
+        void InitProjector();
+        const RenderSettings& GetSettings() const;
         svg::Document RenderMap() const;
 
 
@@ -139,5 +143,4 @@ namespace renderer {
         vector<string_view> bus_names_;
         vector<string_view> stop_names_;
     };
-
 }

@@ -19,7 +19,9 @@ namespace renderer {
 
 	void MapRenderer::SetSettings(RenderSettings& settings) {
 		settings_ = move(settings);
+	}
 
+	void MapRenderer::InitProjector() {
 		const auto all_coords = db_.GetCoordinates();
 		SphereProjector projector(all_coords.begin(), all_coords.end(), settings_.width, settings_.height, settings_.padding);
 		projector_ = move(projector);
@@ -180,6 +182,10 @@ namespace renderer {
 			doc.Add(txt_subs);
 			doc.Add(txt_main);
 		}
+	}
+
+	const RenderSettings& MapRenderer::GetSettings() const {
+		return settings_;
 	}
 
 }

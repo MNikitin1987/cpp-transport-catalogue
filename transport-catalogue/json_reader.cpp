@@ -3,11 +3,12 @@
 
 namespace json_reader {
 
-	JSONReader::JSONReader(TransportCatalogue& db, MapRenderer& map_renderer, RequestHandler& handler, TransportRouter& router)
+	JSONReader::JSONReader(TransportCatalogue& db, MapRenderer& map_renderer, RequestHandler& handler, TransportRouter& router, Serializator& serializator)
 		: db_(db)
 		, map_renderer_(map_renderer)
 		, handler_(handler)
-		, router_(router) {
+		, router_(router)
+		, serializator_(serializator) {
 	}
 
 
@@ -42,6 +43,7 @@ namespace json_reader {
 				db_.AddBus(bus);
 			}
 		}
+
 	}
 
 
@@ -120,13 +122,33 @@ namespace json_reader {
 			routing_settings.at("bus_velocity"s).AsDouble());
 	}
 
-	void JSONReader::Load(istream& is) {
-		const json::Document doc = json::Load(is);
 
-		ReadCatalog(doc.GetRoot().AsDict().at("base_requests"s).AsArray());
-		ReadRenderSettings(doc.GetRoot().AsDict().at("render_settings").AsDict());
-		ReadRequests(doc.GetRoot().AsDict().at("stat_requests"s).AsArray());
-		ReadRoutingSettings(doc.GetRoot().AsDict().at("routing_settings"s).AsDict());
+
+
+	void JSONReader::LoadMakeBase(istream& is) {
+		const json::Dict root = json::Load(is).GetRoot().AsDict();
+
+		ReadCatalog(root.at("base_requests"s).AsArray());
+
+		if (root.find("render_settings") != root.end()) {
+			ReadRenderSettings(root.at("render_settings").AsDict());
+		}
+
+		if (root.find("routing_settings") != root.end()) {
+			ReadRoutingSettings(root.at("routing_settings"s).AsDict());
+		}
+
+		serializator_.SetFile(root.at("serialization_settings"s).AsDict().at("file"s).AsString());
+	}
+
+
+
+	void JSONReader::LoadProcessRequests(istream& is) {
+		const json::Dict root = json::Load(is).GetRoot().AsDict();
+
+		ReadRequests(root.at("stat_requests"s).AsArray());
+
+serializator_.SetFile(root.at("serialization_settings"s).AsDict().at("file"s).AsString());
 	}
 
 

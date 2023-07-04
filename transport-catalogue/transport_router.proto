@@ -1,0 +1,13 @@
+syntax = "proto3";
+
+
+package tr;
+
+message Settings {
+    double stop_wait_time = 1;
+    double bus_velocity = 2;
+}
+
+message Router {
+    Settings settings = 1;
+}

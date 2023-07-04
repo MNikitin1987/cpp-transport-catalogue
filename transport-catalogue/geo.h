@@ -26,4 +26,4 @@ namespace geo {
             + cos(from.lat * dr) * cos(to.lat * dr) * cos(abs(from.lng - to.lng) * dr))
             * earth_radius;
     }
-}
+} 

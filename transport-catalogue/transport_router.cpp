@@ -10,9 +10,7 @@ void TransportRouter::SetSettings(int bus_wait_time, double bus_velocity) {
 	settings_.bus_velocity = bus_velocity;
 }
 
-size_t TransportRouter::StopFromName(string_view stop_name) {
-	return lower_bound(all_stops_.begin(), all_stops_.end(), stop_name) - all_stops_.begin();
-}
+
 
 void TransportRouter::AddEdge(size_t from, size_t to, double weight, string_view name, size_t span_count) {
 	graph_->AddEdge({ from, to, weight });
@@ -38,8 +36,8 @@ void TransportRouter::MakeGraph() {
 	};
 
 	auto AddBusEdge = [&](string_view stop_from, string_view stop_to, double weight, string_view bus, size_t span_count) {
-		const auto incidence_out1 = IncidenceFromStopOut(StopFromName(stop_from));
-		const auto incidence_in2 = IncidenceFromStopIn(StopFromName(stop_to));
+		const auto incidence_out1 = IncidenceFromStopOut(domain::NumFromName(all_stops_, stop_from));
+		const auto incidence_in2 = IncidenceFromStopIn(domain::NumFromName(all_stops_, stop_to));
 		AddEdge(incidence_out1, incidence_in2, weight, bus, span_count);
 		return;
 	};
@@ -77,12 +75,12 @@ void TransportRouter::MakeGraph() {
 					const size_t back_prev = last_stop - prev_stop;
 					const size_t back_to = last_stop - to;
 					const size_t back_from = last_stop - from;
-					weight_back += DistanceToWeight(db_.GetRoadLength(stops[back_prev], stops[back_to]));
+					weight_back += DistanceToWeight(db_.GetDistance(stops[back_prev], stops[back_to]));
 					++span_cnt_back;
 					AddBusEdge(stops[back_from], stops[back_to], weight_back, bus, span_cnt_back);
 				}
 
-				weight_forward += DistanceToWeight(db_.GetRoadLength(stops[prev_stop], stops[to]));
+				weight_forward += DistanceToWeight(db_.GetDistance(stops[prev_stop], stops[to]));
 				++span_cnt_forward;
 				AddBusEdge(stops[from], stops[to], weight_forward, bus, span_cnt_forward);
 				prev_stop = to;
@@ -101,7 +99,7 @@ optional<PathInfo> TransportRouter::GetPath(const string_view& from, const strin
 	}
 
 	auto IncidenceFromStopName = [this](string_view stop_name) {
-		return StopFromName(stop_name) * 2;
+		return NumFromName(all_stops_, stop_name) * 2;
 	};
 
 	if (!binary_search(all_stops_.begin(), all_stops_.end(), from) ||
@@ -129,4 +127,8 @@ optional<PathInfo> TransportRouter::GetPath(const string_view& from, const strin
 	res = move(data);
 
 	return res;
+}
+
+RoutingSettings TransportRouter::GetSettings() const {
+	return settings_;
 }

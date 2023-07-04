@@ -9,6 +9,7 @@
 #include "router.h"
 
 using namespace graph;
+using namespace tc;
 
 
 struct RoutingSettings {
@@ -35,8 +36,8 @@ public:
 	TransportRouter(const TransportCatalogue& db);
 
 	void SetSettings(int bus_wait_time, double bus_velocity);
+	RoutingSettings GetSettings() const;
 	optional<PathInfo> GetPath(const string_view& from, const string_view& to);
-	size_t StopFromName(string_view stop_name);
 
 private:
 	void MakeGraph();

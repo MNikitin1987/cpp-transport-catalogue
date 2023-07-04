@@ -3,6 +3,7 @@
 #include "transport_catalogue.h"
 #include "map_renderer.h"
 #include "request_handler.h"
+#include "serialization.h"
 #include "json.h"
 
 #include <iostream>
@@ -21,8 +22,9 @@ namespace json_reader {
 	class JSONReader {
 
 	public:
-		JSONReader(TransportCatalogue& db, MapRenderer& map_renderer, RequestHandler& handler, TransportRouter& router);
-		void Load(istream& is);
+		JSONReader(TransportCatalogue& db, MapRenderer& map_renderer, RequestHandler& handler, TransportRouter& router, Serializator& serializator);
+		void LoadMakeBase(istream& is);
+		void LoadProcessRequests(istream& is);
 
 	private:
 		void ReadCatalog(const json::Array& base_requests);
@@ -35,7 +37,6 @@ namespace json_reader {
 		MapRenderer& map_renderer_;
 		RequestHandler& handler_;
 		TransportRouter& router_;
+		Serializator& serializator_;
 	};
-
-
 }
